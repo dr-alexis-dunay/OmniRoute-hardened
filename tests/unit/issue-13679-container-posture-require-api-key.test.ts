@@ -49,12 +49,13 @@ test("fly.toml ships REQUIRE_API_KEY=true in [env] for the always-public Fly pat
   );
 });
 
-test("the npm/CLI local-first REQUIRE_API_KEY default is untouched (#13679 PR E constraint)", () => {
+test("hardened fork: the REQUIRE_API_KEY default is true everywhere (deliberately reverses the #13679 PR E constraint)", () => {
+  // Upstream kept the npm/CLI default at false (local-first). This fork flips it to true after a
+  // security audit showed the default (0.0.0.0 bind + no key) exposed the inference plane.
   const definitions = read("src/shared/constants/featureFlagDefinitions.ts");
   assert.match(
     definitions,
-    /key:\s*"REQUIRE_API_KEY"[\s\S]{0,200}?defaultValue:\s*"false"/,
-    "the local-first npm/CLI default must stay REQUIRE_API_KEY=false — only the shipped " +
-      "container/Fly deployment manifests change posture, per the #13679 owner decision"
+    /key:\s*"REQUIRE_API_KEY"[\s\S]{0,200}?defaultValue:\s*"true"/,
+    "the hardened fork must default REQUIRE_API_KEY=true"
   );
 });

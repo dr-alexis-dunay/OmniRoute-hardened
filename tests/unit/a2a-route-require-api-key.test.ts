@@ -62,8 +62,8 @@ test("REQUIRE_API_KEY=true rejects an unkeyed /a2a call (GHSA-v54m)", async () =
   );
 });
 
-test("keyless local-first default still allows /a2a (posture preserved)", async () => {
-  delete process.env.REQUIRE_API_KEY;
+test("keyless opt-out (REQUIRE_API_KEY=false) still allows /a2a", async () => {
+  process.env.REQUIRE_API_KEY = "false"; // the hardened default is true; this covers the explicit opt-out
   delete process.env.OMNIROUTE_API_KEY;
   assert.equal(await isUnauthorized(await post()), false, "keyless default must not 401");
 });

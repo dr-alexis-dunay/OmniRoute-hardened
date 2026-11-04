@@ -150,7 +150,7 @@ test("a name that does not resolve is left to the request itself to fail", async
   assert.notEqual(code, null);
 });
 
-test("only guard public-only resolves the host; literals and other modes do not", async () => {
+test("only public-only and block-metadata resolve a NAME; literals and guard none do not", async () => {
   let lookups = 0;
   const dnsLookup = async () => {
     lookups += 1;
@@ -180,7 +180,9 @@ test("only guard public-only resolves the host; literals and other modes do not"
       dnsLookup,
     })
   );
-  assert.equal(lookups, 0);
+  // block-metadata now resolves non-literal names once (hardening: a name that resolves to
+  // 169.254.169.254 must be blocked); literals and guard "none" still do no lookup.
+  assert.equal(lookups, 1);
 });
 
 test("with pinDns the request connects to the address that was checked, not to a second answer", async () => {

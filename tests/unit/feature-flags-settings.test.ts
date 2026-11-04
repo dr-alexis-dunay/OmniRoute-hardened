@@ -532,7 +532,7 @@ describe("resolveFeatureFlag", () => {
   });
 
   it("falls back to default when neither DB nor ENV", () => {
-    assert.strictEqual(resolveFeatureFlag("REQUIRE_API_KEY"), "false");
+    assert.strictEqual(resolveFeatureFlag("REQUIRE_API_KEY"), "true"); // hardened default
   });
 
   it("DB takes priority over ENV", () => {

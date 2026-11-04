@@ -80,7 +80,8 @@ async function status(request: Request): Promise<{ status: number; code: string 
 
 function setEnv(values: Partial<Record<(typeof ENV_KEYS)[number], string>>) {
   for (const key of ENV_KEYS) delete process.env[key];
-  Object.assign(process.env, values);
+  // Hardened default is REQUIRE_API_KEY=true; the "keyless install" cases model the explicit opt-out.
+  Object.assign(process.env, { REQUIRE_API_KEY: "false" }, values);
 }
 
 test.beforeEach(() => {
