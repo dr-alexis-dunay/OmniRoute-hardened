@@ -118,7 +118,7 @@ contraseña propia, `STORAGE_ENCRYPTION_KEY`, `OMNIROUTE_REQUIRE_ENCRYPTION=true
 
 - **Cobertura de pruebas parcial.** Se ejecutaron 1737 de 7777 archivos de prueba (613 elegidos por tocar lo
   modificado, 524 importadores directos de los módulos cambiados y 600 al azar del resto). Quedan ~6000 sin ejecutar;
-  una ejecución completa no fue viable en este equipo. Fallan 14 archivos, todos ya presentes en el código original
+  una ejecución completa no fue viable en este equipo. Fallan 15 archivos distintos, todos ya presentes en el código original
   (entorno de sandbox, interfaz y red); ninguno es nuevo.
 - **Vulnerabilidades de dependencias:** producción 0; 69 en herramientas de desarrollo (11 altas: promptfoo, extract-zip,
   basic-ftp, etc.). `npm audit fix` no puede resolverlas sin forzar (conflictos ERESOLVE) y exigiría subidas mayores.
