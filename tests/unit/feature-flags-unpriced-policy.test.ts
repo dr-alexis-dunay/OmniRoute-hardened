@@ -116,6 +116,8 @@ async function assertUpdate(result: Update, before: State, after: State) {
 test.beforeEach(async () => {
   delete process.env[POLICY];
   delete process.env[LEGACY];
+  // The shared test setup defaults REQUIRE_API_KEY=false, which would count as an env override here.
+  delete process.env.REQUIRE_API_KEY;
   flagsDb.clearAllFeatureFlagOverrides();
   core.getDbInstance().exec("DELETE FROM usage_history");
   cookie = `auth_token=${await mintDashboardSessionToken(new TextEncoder().encode(process.env.JWT_SECRET))}`;
