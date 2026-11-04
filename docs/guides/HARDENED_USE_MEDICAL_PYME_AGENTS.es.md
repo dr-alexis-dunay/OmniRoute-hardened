@@ -1,3 +1,9 @@
+---
+title: "Hardened OmniRoute: medical use, Chilean SMEs and coordinated agents"
+version: 3.8.53
+lastUpdated: 2026-11-04
+---
+
 # OmniRoute endurecido: uso médico, PYMES en Chile y agentes coordinados
 
 > Guía operativa derivada de una auditoría local (noviembre de 2026). No es asesoría legal ni clínica.
