@@ -472,9 +472,15 @@ export async function runAuthzPipeline(
     }
   }
 
+  // Hardening: anonymous management subjects (requireLogin=false / fresh install on loopback)
+  // were exempt from the Origin/CSRF check, so any web page could fire blind cross-site POSTs
+  // at http://localhost:PORT/api/... . Browsers always send Origin on such requests; CLI tools
+  // (curl, omniroute CLI) do not, so they are unaffected.
+  const anonymousBrowserMutation =
+    outcome.subject.kind === "anonymous" && Boolean(request.headers.get("origin"));
   if (
     classification.routeClass === "MANAGEMENT" &&
-    outcome.subject.kind === "dashboard_session" &&
+    (outcome.subject.kind === "dashboard_session" || anonymousBrowserMutation) &&
     isUnsafeMutationMethod(method)
   ) {
     const originVerdict = validateBrowserMutationOrigin(request);

@@ -339,7 +339,10 @@ export const PROVIDER_PROFILES = {
 // Real limits are learned from provider response headers.
 export const DEFAULT_API_LIMITS = {
   requestsPerMinute: 60, // 60 RPM (reduced from 100 — saves Bottleneck queue memory)
-  minTimeBetweenRequests: 350, // 350ms minimum gap (increased from 200)
+  // Hardening/perf: a fixed 350ms gap added ~350ms latency to every sequential request.
+  // Default 0 (provider-learned limits + RPM/concurrency caps still apply); override with
+  // OMNIROUTE_MIN_TIME_BETWEEN_REQUESTS_MS.
+  minTimeBetweenRequests: Math.max(0, Number(process.env.OMNIROUTE_MIN_TIME_BETWEEN_REQUESTS_MS ?? 0) || 0),
   concurrentRequests: 6, // Max 6 parallel per provider (reduced from 10)
 };
 

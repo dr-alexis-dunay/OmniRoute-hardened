@@ -74,6 +74,16 @@ function readNoLogFromDb(apiKeyId: string): boolean {
   }
 }
 
+/**
+ * Privacy by default (hardened fork): request/response bodies are NOT persisted to the
+ * call-log database/artifacts unless the operator opts in with OMNIROUTE_CALL_LOG_BODIES=true.
+ * Metadata (model, tokens, latency, status) is still recorded. Per-key `noLog` and
+ * NO_LOG_API_KEY_IDS keep working on top of this.
+ */
+export function isBodyLoggingDisabled(): boolean {
+  return process.env.OMNIROUTE_CALL_LOG_BODIES !== "true";
+}
+
 export function isNoLog(apiKeyId: string): boolean {
   if (!apiKeyId) return false;
   if (noLogKeys.has(apiKeyId)) return true;

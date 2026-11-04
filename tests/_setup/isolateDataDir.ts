@@ -25,6 +25,8 @@ import path from "node:path";
 // raise ENOENT/ENOTEMPTY after the test has already passed. Keep the global test default
 // console-only; tests that cover file logging explicitly set APP_LOG_TO_FILE themselves.
 process.env.APP_LOG_TO_FILE ||= "false";
+// Existing tests assert that bodies are persisted; production default is privacy-first (off).
+process.env.OMNIROUTE_CALL_LOG_BODIES ||= "true";
 
 // `node --test --test-force-exit` exits each test-file child as soon as its known tests finish,
 // without flushing the child->runner stdout pipe (nodejs/node#64833; fix proposed in

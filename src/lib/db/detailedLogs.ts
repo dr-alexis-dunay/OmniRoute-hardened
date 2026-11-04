@@ -8,7 +8,7 @@
 import { v4 as uuidv4 } from "uuid";
 import { getDbInstance } from "./core";
 import { getSettings } from "./settings";
-import { isNoLog } from "../compliance/noLog";
+import { isBodyLoggingDisabled, isNoLog } from "../compliance/noLog";
 import {
   protectPayloadForLog,
   serializePayloadForStorage,
@@ -71,7 +71,9 @@ export async function isDetailedLoggingEnabled(): Promise<boolean> {
 /** Save a detailed log entry — caller must verify isDetailedLoggingEnabled() first */
 export function saveRequestDetailLog(entry: RequestDetailLog): void {
   const noLogEnabled =
-    Boolean(entry.no_log) || (entry.api_key_id ? isNoLog(entry.api_key_id) : false);
+    Boolean(entry.no_log) ||
+    isBodyLoggingDisabled() ||
+    (entry.api_key_id ? isNoLog(entry.api_key_id) : false);
   if (noLogEnabled || !requestDetailLogsTableExists()) return;
 
   const db = getDbInstance();
