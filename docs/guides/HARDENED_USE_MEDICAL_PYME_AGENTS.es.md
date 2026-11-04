@@ -17,12 +17,12 @@ lastUpdated: 2026-11-04
 | `REQUIRE_API_KEY` | `false` | `true` (código y `.env.example`) | Prueba unitaria |
 | `INITIAL_PASSWORD` | `CHANGEME` público | Aleatoria al crear `.env` | Prueba unitaria |
 | Permisos del `.env` raíz | 664 | 600 | Prueba unitaria |
-| Cuerpos de prompts/respuestas en `call_logs` | Guardados siempre | **No se guardan** salvo `OMNIROUTE_CALL_LOG_BODIES=true` | Prueba unitaria; **falta e2e sobre servidor compilado** |
+| Cuerpos de prompts/respuestas en `call_logs` | Guardados siempre | **No se guardan** salvo `OMNIROUTE_CALL_LOG_BODIES=true` | Prueba unitaria **y servidor compilado** (con la opción: 1 archivo con el prompt; por defecto: 0; clave `noLog`: 0) |
 | Fallo al cifrar | Guarda en texto plano | Lanza error (falla cerrado) | Revisión de código |
 | `OMNIROUTE_REQUIRE_ENCRYPTION=true` | no existía | Rechaza guardar credenciales sin clave | Prueba unitaria |
 | Retardo fijo por solicitud | 350 ms | 0 (variable `OMNIROUTE_MIN_TIME_BETWEEN_REQUESTS_MS`) | Medido: mediana 350 ms → 28 ms (servidor simulado) |
 | SSRF por DNS (`block-metadata`) | Solo miraba el nombre literal | Resuelve el nombre y bloquea 169.254.0.0/16 | Prueba unitaria con control negativo (falla sin el parche) |
-| CSRF con sujeto anónimo | Sin comprobación de `Origin` | Se comprueba si la petición trae `Origin` | Revisión de código; **sin prueba dedicada** |
+| CSRF con sujeto anónimo | Sin comprobación de `Origin` | Se comprueba si la petición trae `Origin` | Servidor compilado con `requireLogin=false`: sin `Origin` 201, `Origin` propio 201, `Origin` cruzado **403**. Sin comparación contra una compilación del código original |
 
 Lo que **no** se corrigió: ver la sección 5.
 
@@ -115,8 +115,9 @@ contraseña propia, `STORAGE_ENCRYPTION_KEY`, `OMNIROUTE_REQUIRE_ENCRYPTION=true
 - **`requireLogin=false` + red privada:** con "omitir contraseña" el gateway puede quedar sin autenticación de
   gestión y los rangos LAN/Docker/Tailscale cuentan como locales (solo lectura de código; no ejecutado).
   No activar esa opción.
-- **`NO_LOG_API_KEY_IDS`:** funciona en prueba unitaria pero **no funcionó** en el servidor compilado en la
-  prueba de sandbox; causa sin determinar. Usar `noLog` por clave o el control global de esta rama.
+- **`NO_LOG_API_KEY_IDS`:** funciona en prueba unitaria pero **no suprime el registro** en el servidor compilado
+  (reproducido dos veces; la variable llega al proceso y el identificador coincide con el del registro). Defecto
+  ya presente en el paquete publicado; causa sin determinar. Usar `noLog` por clave o el control global de esta rama.
 - **Ajuste `detailedLogsEnabled`:** no controla `call_logs/*.json`; la rama añade un control global
   independiente, no cambia el significado de ese ajuste.
 - **69 vulnerabilidades** (`npm audit`: 11 altas, 0 críticas) en gran parte de herramientas de desarrollo: no actualizadas.
