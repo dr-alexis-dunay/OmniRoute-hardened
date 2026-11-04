@@ -258,8 +258,16 @@ export const managementPolicy: RoutePolicy = {
     // ORIGINAL request still carries every client-supplied header at this point,
     // and the Host header was how a remote caller reached the anonymous
     // POST /api/settings/require-login write (GHSA-7pq4-8pvv-rx7r).
+    // Hardening: the requireLogin=false bypass only applies to a LOOPBACK peer. Previously any
+    // peer that reached the server (LAN, Docker bridge, Tailscale/CGNAT) was served anonymously
+    // and, because private-LAN peers also pass the LOCAL_ONLY tier above, could reach the
+    // spawn-capable routes (ACP agents, middleware hooks, skills, version update) without any
+    // credential. Operators that really want the old behaviour must opt in explicitly.
+    const anonymousAllowedForPeer =
+      isLoopbackRequest(ctx) || process.env.OMNIROUTE_ALLOW_ANONYMOUS_NON_LOOPBACK === "true";
     if (
       !isAlwaysProtectedPath(path) &&
+      anonymousAllowedForPeer &&
       !(await isAuthRequired(ctx.request, { loopback: isLoopbackRequest(ctx) }))
     ) {
       return allow({ kind: "anonymous", id: "anonymous", label: "auth-disabled" });
