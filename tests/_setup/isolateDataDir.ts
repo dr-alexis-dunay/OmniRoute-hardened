@@ -27,6 +27,9 @@ import path from "node:path";
 process.env.APP_LOG_TO_FILE ||= "false";
 // Existing tests assert that bodies are persisted; production default is privacy-first (off).
 process.env.OMNIROUTE_CALL_LOG_BODIES ||= "true";
+// Many route tests exercise /v1 without credentials; the production default is now REQUIRE_API_KEY=true
+// (asserted explicitly in tests/unit/hardening-defaults.test.ts, which unsets this first).
+process.env.REQUIRE_API_KEY ||= "false";
 
 // `node --test --test-force-exit` exits each test-file child as soon as its known tests finish,
 // without flushing the child->runner stdout pipe (nodejs/node#64833; fix proposed in
