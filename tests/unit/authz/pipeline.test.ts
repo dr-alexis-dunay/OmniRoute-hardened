@@ -693,6 +693,9 @@ test("runAuthzPipeline throttles the stale-dashboard-cookie warning to once per 
   const originalInitialPassword = process.env.INITIAL_PASSWORD;
   delete process.env.INITIAL_PASSWORD;
   await settingsDb.updateSettings({ requireLogin: false });
+  // Hardened: the requireLogin=false anonymous bypass only applies to a LOOPBACK peer, and a peer
+  // that cannot be determined is not loopback. Stamp the requests as coming from 127.0.0.1.
+  process.env.OMNIROUTE_PEER_STAMP_TOKEN = "pipeline-test-peer-stamp-token";
 
   // A foreign token: signed with the SAME secret the dashboard uses (so it is not
   // an "invalid signature" case), but missing the `authenticated: true` claim — the
@@ -716,7 +719,10 @@ test("runAuthzPipeline throttles the stale-dashboard-cookie warning to once per 
     for (let i = 0; i < 3; i++) {
       const response = await pipeline.runAuthzPipeline(
         request("http://localhost/dashboard", {
-          headers: { cookie: `auth_token=${foreignToken}` },
+          headers: {
+            cookie: `auth_token=${foreignToken}`,
+            "x-omniroute-peer-ip": "pipeline-test-peer-stamp-token|127.0.0.1",
+          },
         }),
         { enforce: true }
       );

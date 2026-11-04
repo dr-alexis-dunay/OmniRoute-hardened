@@ -23,6 +23,10 @@ lastUpdated: 2026-11-04
 | Retardo fijo por solicitud | 350 ms | 0 (variable `OMNIROUTE_MIN_TIME_BETWEEN_REQUESTS_MS`) | Medido: mediana 350 ms → 28 ms (servidor simulado) |
 | SSRF por DNS (`block-metadata`) | Solo miraba el nombre literal | Resuelve el nombre y bloquea 169.254.0.0/16 | Prueba unitaria con control negativo (falla sin el parche) |
 | CSRF con sujeto anónimo | Sin comprobación de `Origin` | Se comprueba si la petición trae `Origin` | Servidor compilado con `requireLogin=false`: sin `Origin` 201, `Origin` propio 201, `Origin` cruzado **403**. Sin comparación contra una compilación del código original |
+| `NO_LOG_API_KEY_IDS` | Se perdía al cargar la clave (`setNoLog(id,false)` borraba el id) | Ids de la variable en un conjunto inmutable | Servidor compilado: sin la variable 1 archivo con el prompt, con la variable 0 (también en la 2.ª solicitud). Prueba de regresión con control negativo |
+| `requireLogin=false` | Acceso anónimo a cualquier par de red (LAN, Docker, CGNAT) | Solo loopback; `OMNIROUTE_ALLOW_ANONYMOUS_NON_LOOPBACK=true` restaura lo anterior | Servidor compilado (datos nuevos): loopback 200, 192.168.1.50 → 401; con la opción ambos 200. Prueba con control negativo |
+| MITM (CA raíz del sistema, `/etc/hosts`, sudo) | Disponible | Desactivado salvo `OMNIROUTE_ENABLE_MITM=true` (parar/limpiar sigue disponible) | Servidor compilado: `403 MITM_DISABLED`; prueba unitaria |
+| `docker-compose.ollama-local.yml` | Publicaba en `0.0.0.0` | `127.0.0.1` | Prueba de contrato existente |
 
 Lo que **no** se corrigió: ver la sección 5.
 
@@ -110,16 +114,17 @@ Ver `omniroute-hardened.env`. Mínimo: `OMNIROUTE_SERVER_HOST=127.0.0.1`, `REQUI
 contraseña propia, `STORAGE_ENCRYPTION_KEY`, `OMNIROUTE_REQUIRE_ENCRYPTION=true`,
 `OMNIROUTE_CALL_LOG_BODIES` sin definir.
 
-## 5. Riesgos que NO se corrigieron
+## 5. Riesgos que siguen abiertos
 
-- **`requireLogin=false` + red privada:** con "omitir contraseña" el gateway puede quedar sin autenticación de
-  gestión y los rangos LAN/Docker/Tailscale cuentan como locales (solo lectura de código; no ejecutado).
-  No activar esa opción.
-- **`NO_LOG_API_KEY_IDS`:** funciona en prueba unitaria pero **no suprime el registro** en el servidor compilado
-  (reproducido dos veces; la variable llega al proceso y el identificador coincide con el del registro). Defecto
-  ya presente en el paquete publicado; causa sin determinar. Usar `noLog` por clave o el control global de esta rama.
-- **Ajuste `detailedLogsEnabled`:** no controla `call_logs/*.json`; la rama añade un control global
-  independiente, no cambia el significado de ese ajuste.
-- **69 vulnerabilidades** (`npm audit`: 11 altas, 0 críticas) en gran parte de herramientas de desarrollo: no actualizadas.
-- Módulo **MITM** (instala una CA raíz, edita `/etc/hosts`): no usar sin necesidad.
-- Revisión estática parcial (ver informe); ~790 rutas no auditadas una por una.
+- **Cobertura de pruebas parcial.** Se ejecutaron 1737 de 7777 archivos de prueba (613 elegidos por tocar lo
+  modificado, 524 importadores directos de los módulos cambiados y 600 al azar del resto). Quedan ~6000 sin ejecutar;
+  una ejecución completa no fue viable en este equipo. Fallan 14 archivos, todos ya presentes en el código original
+  (entorno de sandbox, interfaz y red); ninguno es nuevo.
+- **Vulnerabilidades de dependencias:** producción 0; 69 en herramientas de desarrollo (11 altas: promptfoo, extract-zip,
+  basic-ftp, etc.). `npm audit fix` no puede resolverlas sin forzar (conflictos ERESOLVE) y exigiría subidas mayores.
+  No afectan al servidor empaquetado, pero sí a quien desarrolle o ejecute esas herramientas.
+- **Con `requireLogin=false` y acceso desde loopback**, cualquier proceso local (o una página web que logre
+  una petición sin `Origin`, por ejemplo con DNS rebinding) puede administrar el gateway. No desactivar el login.
+- **Proveedores reales y calidad de respuestas:** no se probaron.
+- **Docker/Fly y Electron:** no verificados (salvo el compose de Ollama).
+- **Marco legal chileno:** de fuentes secundarias; verificar en bcn.cl y con un abogado.
