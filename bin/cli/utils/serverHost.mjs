@@ -22,7 +22,9 @@ export function resolveServerHost(
   if (runtimePlatform === "win32" && env.HOSTNAME && env.HOSTNAME !== machineHostname) {
     return env.HOSTNAME;
   }
-  return "0.0.0.0";
+  // Hardening: loopback by default. Expose on the network explicitly with
+  // OMNIROUTE_SERVER_HOST=0.0.0.0 (and set REQUIRE_API_KEY=true).
+  return "127.0.0.1";
 }
 
 const LOOPBACK_HOSTS = new Set(["127.0.0.1", "localhost", "::1", "[::1]"]);

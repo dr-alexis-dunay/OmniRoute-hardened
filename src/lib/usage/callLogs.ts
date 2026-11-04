@@ -35,7 +35,7 @@ import {
   isNonTextRequest,
   resolveUsageProvenance,
 } from "./callContentProvenance";
-import { isNoLog } from "../compliance/noLog";
+import { isBodyLoggingDisabled, isNoLog } from "../compliance/noLog";
 import {
   parseStoredPayload,
   protectErrorPayloadForLog,
@@ -507,7 +507,8 @@ async function buildCallLogRow(entry: any): Promise<PreparedCallLogRow> {
   const apiKeyId = entry.apiKeyId || apiKeyContext?.apiKeyId || null;
   const apiKeyName = entry.apiKeyName || apiKeyContext?.apiKeyName || null;
   const connectionId = entry.connectionId || apiKeyContext?.connectionId || null;
-  const noLogEnabled = Boolean(entry.noLog) || (apiKeyId ? isNoLog(apiKeyId) : false);
+  const noLogEnabled =
+    Boolean(entry.noLog) || isBodyLoggingDisabled() || (apiKeyId ? isNoLog(apiKeyId) : false);
 
   const protectedRequestBody = noLogEnabled ? null : protectPayloadForLog(entry.requestBody);
   const responseStatus = Number(entry.status);

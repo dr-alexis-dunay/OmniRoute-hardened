@@ -14,6 +14,7 @@ import {
 } from "@/shared/network/dnsPinnedFetch";
 import {
   OutboundUrlGuardError,
+  isCloudMetadataHost,
   type OutboundUrlGuardMode,
   parseAndValidateNonMetadataUrl,
   parseAndValidatePublicUrl,
@@ -205,6 +206,34 @@ function applyUrlGuard(targetUrl: URL, guard: SafeOutboundFetchGuard, method: st
       });
     }
     throw error;
+  }
+}
+
+async function assertResolvedHostIsNotMetadata(
+  targetUrl: URL,
+  method: string,
+  lookup?: DnsLookup
+): Promise<void> {
+  const bare = bareHostname(targetUrl.hostname);
+  if (!bare || isIP(bare)) return; // literals were already validated by applyUrlGuard
+  let answers: DnsLookupResult[];
+  try {
+    answers = await resolveHostnameAddresses(bare, lookup);
+  } catch {
+    return;
+  }
+  const hit = answers.find((entry) => isCloudMetadataHost(entry.address));
+  if (hit) {
+    throw new SafeOutboundFetchError(
+      `Outbound host resolves to a blocked cloud-metadata address (${hit.address})`,
+      {
+        code: "URL_GUARD_BLOCKED",
+        url: targetUrl.toString(),
+        method,
+        attempts: 1,
+        isRetryable: false,
+      }
+    );
   }
 }
 
@@ -422,6 +451,13 @@ export async function safeOutboundFetch(url: string | URL, options: SafeOutbound
   } = options;
 
   applyUrlGuard(targetUrl, guard, method);
+  // Hardening: "block-metadata" only inspected the literal hostname, so a name that RESOLVES to
+  // 169.254.169.254 (e.g. 169.254.169.254.nip.io or an attacker-controlled DNS record) bypassed
+  // it. Resolve the name and refuse when any answer is a cloud-metadata / link-local address.
+  // Resolution failures are not treated as a block here (the fetch itself will fail).
+  if (guard === "block-metadata") {
+    await assertResolvedHostIsNotMetadata(targetUrl, method, dnsLookup);
+  }
   // A proxy resolves the name itself and a followed redirect leaves the checked host, so the
   // connection is only pinned to the checked address for a direct request to that one host.
   const pinsConnection =

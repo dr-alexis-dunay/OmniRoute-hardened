@@ -53,7 +53,7 @@ used when neither a DB override nor an environment variable is present.
 
 | Key                                     | Type    | Default  | Description                                                                                                                                                                                                                                                                   |
 | --------------------------------------- | ------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `REQUIRE_API_KEY`                       | boolean | `false`  | Require an API key for all incoming requests.                                                                                                                                                                                                                                 |
+| `REQUIRE_API_KEY`                       | boolean | `true`   | Require an API key for all incoming requests.                                                                                                                                                                                                                                 |
 | `INPUT_SANITIZER_ENABLED`               | boolean | `true`   | Enable input sanitization for all requests.                                                                                                                                                                                                                                   |
 | `INJECTION_GUARD_MODE`                  | enum    | `off`    | Prompt injection guard mode. Values: `off`, `warn`, `block`, `redact`.                                                                                                                                                                                                        |
 | `PII_REDACTION_ENABLED`                 | boolean | `false`  | Redact PII from requests (independent of `INPUT_SANITIZER_MODE`).                                                                                                                                                                                                             |
@@ -260,8 +260,8 @@ Returns every flag with its effective value, source, and a summary.
       "category": "security",
       "type": "boolean",
       "enumValues": null,
-      "defaultValue": "false",
-      "effectiveValue": "false",
+      "defaultValue": "true",
+      "effectiveValue": "true",
       "source": "default", // "db" | "env" | "default"
       "requiresRestart": false,
       "warningLevel": "caution",

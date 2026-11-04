@@ -95,7 +95,7 @@ function ctx(headers: Headers, normalizedPath = "/api/v1/chat/completions") {
 test.beforeEach(() => {
   // Default to "every key fails" — individual tests override as needed.
   mockValidateApiKey = () => false;
-  delete process.env.REQUIRE_API_KEY;
+  process.env.REQUIRE_API_KEY = "false"; // hardened default is true; these cases cover the opt-out path
 });
 
 test("#2257 — invalid bearer + REQUIRE_API_KEY=true → 401", async () => {

@@ -98,7 +98,8 @@ test("Progressive backoff: Level 0→1→2 produce increasing cooldowns", () => 
 
 test("DEFAULT_API_LIMITS has reasonable values", () => {
   assert.ok(DEFAULT_API_LIMITS.requestsPerMinute >= 60, "RPM should be at least 60");
-  assert.ok(DEFAULT_API_LIMITS.minTimeBetweenRequests >= 100, "minTime should be at least 100ms");
+  // Hardened default: no fixed per-request gap (it added ~350ms latency); still non-negative.
+  assert.ok(DEFAULT_API_LIMITS.minTimeBetweenRequests >= 0, "minTime must be non-negative");
   assert.ok(DEFAULT_API_LIMITS.concurrentRequests >= 5, "maxConcurrent should be at least 5");
 });
 

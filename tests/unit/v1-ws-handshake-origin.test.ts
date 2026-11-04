@@ -36,7 +36,8 @@ const LOCAL_HOST = "127.0.0.1:20128";
 
 function setEnv(values: Partial<Record<(typeof ENV_KEYS)[number], string>>) {
   for (const key of ENV_KEYS) delete process.env[key];
-  Object.assign(process.env, values);
+  // Hardened default is REQUIRE_API_KEY=true; the "keyless install" cases model the explicit opt-out.
+  Object.assign(process.env, { REQUIRE_API_KEY: "false" }, values);
 }
 
 test.beforeEach(() => {

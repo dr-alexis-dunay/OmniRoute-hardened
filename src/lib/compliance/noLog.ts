@@ -13,6 +13,12 @@ function getDb(): SqliteAdapter | null {
   }
 }
 
+// Ids supplied through NO_LOG_API_KEY_IDS are operator policy and must never be cleared by
+// per-key database syncs. They live in their own immutable set; `noLogKeys` mirrors the
+// api_keys.no_log column and IS mutated by setNoLog() (called from src/lib/db/apiKeys.ts every
+// time a key is loaded, with `noLog === true`). Previously both shared one Set, so loading a key
+// whose DB flag was false deleted its env-configured id and the key was logged again.
+const envNoLogKeys = new Set<string>();
 const noLogKeys = new Set<string>();
 const noLogDbCache = new Map<string, { value: boolean; timestamp: number }>();
 let noLogColumnVerified = false;
@@ -24,7 +30,7 @@ const noLogIdsFromEnv = (process.env.NO_LOG_API_KEY_IDS || "")
   .map((value) => value.trim())
   .filter(Boolean);
 for (const id of noLogIdsFromEnv) {
-  noLogKeys.add(id);
+  envNoLogKeys.add(id);
 }
 
 export function setNoLog(apiKeyId: string, noLog: boolean): void {
@@ -74,8 +80,19 @@ function readNoLogFromDb(apiKeyId: string): boolean {
   }
 }
 
+/**
+ * Privacy by default (hardened fork): request/response bodies are NOT persisted to the
+ * call-log database/artifacts unless the operator opts in with OMNIROUTE_CALL_LOG_BODIES=true.
+ * Metadata (model, tokens, latency, status) is still recorded. Per-key `noLog` and
+ * NO_LOG_API_KEY_IDS keep working on top of this.
+ */
+export function isBodyLoggingDisabled(): boolean {
+  return process.env.OMNIROUTE_CALL_LOG_BODIES !== "true";
+}
+
 export function isNoLog(apiKeyId: string): boolean {
   if (!apiKeyId) return false;
+  if (envNoLogKeys.has(apiKeyId)) return true;
   if (noLogKeys.has(apiKeyId)) return true;
 
   const persistedNoLog = readNoLogFromDb(apiKeyId);

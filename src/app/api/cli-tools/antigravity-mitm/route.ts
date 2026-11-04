@@ -9,6 +9,7 @@ import { cliMitmStartSchema, cliMitmStopSchema } from "@/shared/validation/schem
 import { isValidationFailure, validateBody } from "@/shared/validation/helpers";
 import { resolveApiKey } from "@/shared/services/apiKeyResolver";
 import { isRoot } from "@/mitm/systemCommands";
+import { mitmDisabledResponse } from "@/mitm/enabledGate";
 import { isSudoPasswordRequired } from "@/mitm/dns/dnsConfig";
 
 // GET - Check MITM status
@@ -43,6 +44,8 @@ export async function GET(request) {
 
 // POST - Start MITM proxy
 export async function POST(request) {
+  const disabled = mitmDisabledResponse();
+  if (disabled) return disabled;
   const authError = await requireCliToolsAuth(request);
   if (authError) return authError;
 

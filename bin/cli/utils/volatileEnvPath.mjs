@@ -65,6 +65,9 @@ function suppliesOnlyTemplateDefaults(packageRoot, suppliedValues) {
     if (!defaults.has(key)) defaults.set(key, parseEnvValue(trimmed.slice(index + 1)));
   }
   return [...suppliedValues].every(
-    ([key, value]) => defaults.has(key) && defaults.get(key) === value
+    // INITIAL_PASSWORD is replaced by a random value when .env is generated (hardening) and is
+    // only consumed on first boot (its hash is then persisted in the DB), so losing it on an
+    // update costs nothing.
+    ([key, value]) => key === "INITIAL_PASSWORD" || (defaults.has(key) && defaults.get(key) === value)
   );
 }

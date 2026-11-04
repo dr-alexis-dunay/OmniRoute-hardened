@@ -49,7 +49,7 @@ test.beforeEach(() => {
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
   process.env.OMNIROUTE_PEER_STAMP_TOKEN = "stamp-tok";
   delete process.env.OMNIROUTE_TRUSTED_PROXIES;
-  delete process.env.REQUIRE_API_KEY;
+  process.env.REQUIRE_API_KEY = "false"; // hardened default is true; these cases cover the opt-out path
 });
 
 const DIRECT_CLIENT = "203.0.113.10";

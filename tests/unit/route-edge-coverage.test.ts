@@ -35,7 +35,7 @@ const MACHINE_ID = "1234567890abcdef";
 async function resetStorage() {
   delete process.env.ALLOW_API_KEY_REVEAL;
   delete process.env.INITIAL_PASSWORD;
-  delete process.env.REQUIRE_API_KEY;
+  process.env.REQUIRE_API_KEY = "false"; // hardened default is true; these route cases assume keyless
   delete process.env.ENABLE_SOCKS5_PROXY;
 
   core.resetDbInstance();

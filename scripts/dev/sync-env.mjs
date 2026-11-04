@@ -12,7 +12,7 @@
  *   - Skips commented lines from .env.example
  */
 
-import { copyFileSync, existsSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import { chmodSync, copyFileSync, existsSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { randomBytes } from "node:crypto";
 import { createRequire } from "node:module";
 import { dirname, join, resolve } from "node:path";
@@ -350,7 +350,22 @@ export function syncEnv({ rootDir, quiet = false, scope = "full" } = {}) {
         }
       }
 
-      writeFileSync(envPath, content, "utf8");
+      // Hardening: never ship the publicly known placeholder as a live password.
+      // A random one-time password is generated instead; it is stored only in this
+      // .env (mode 0600) and must be changed after the first login.
+      const placeholder = /^INITIAL_PASSWORD=\s*CHANGEME\s*$/im;
+      if (placeholder.test(content)) {
+        const initialPassword = randomBytes(18).toString("base64url");
+        content = content.replace(placeholder, `INITIAL_PASSWORD=${initialPassword}`);
+        log("🔐 INITIAL_PASSWORD replaced with a random value (see INITIAL_PASSWORD in .env)");
+      }
+
+      writeFileSync(envPath, content, { encoding: "utf8", mode: 0o600 });
+      try {
+        chmodSync(envPath, 0o600); // `mode` is ignored when the file already exists (copyFileSync)
+      } catch {
+        // best-effort: no-op on Windows / read-only filesystems
+      }
       log(
         `✨ Created .env from .env.example (${exampleEntries.size} keys, ${generated} secrets generated)`
       );

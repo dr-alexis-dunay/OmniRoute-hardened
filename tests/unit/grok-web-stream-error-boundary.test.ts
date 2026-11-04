@@ -29,6 +29,7 @@ function runFixture(): Promise<FixtureResult> {
     NODE_ENV: "test",
     API_KEY_SECRET: "grok-boundary-test-only-secret-with-32-plus-characters",
     DISABLE_SQLITE_AUTO_BACKUP: "true",
+    OMNIROUTE_CALL_LOG_BODIES: "true", // bodies are opt-in in the hardened fork; this test asserts persisted payloads
     NO_COLOR: "1",
   };
   // An inherited marker makes Node treat this nested --test run as recursive

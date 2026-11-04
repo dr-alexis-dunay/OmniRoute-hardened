@@ -1,5 +1,6 @@
 export const runtime = "nodejs";
 
+import { mitmDisabledResponse } from "@/mitm/enabledGate";
 import fs from "fs/promises";
 import path from "path";
 import { z } from "zod";
@@ -259,6 +260,8 @@ export async function PUT(request: Request) {
 }
 
 export async function POST(request: Request) {
+  const disabled = mitmDisabledResponse();
+  if (disabled) return disabled;
   const authError = await requireManagementAuth(request);
   if (authError) return authError;
 

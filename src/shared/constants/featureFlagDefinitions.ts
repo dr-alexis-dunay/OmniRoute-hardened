@@ -19,7 +19,7 @@ export const FEATURE_FLAG_DEFINITIONS: FeatureFlagDefinition[] = [
     description: "Require an API key for all incoming requests",
     descriptionI18nKey: "featureFlagRequireApiKeyDescription",
     category: "security",
-    defaultValue: "false",
+    defaultValue: "true",
     type: "boolean",
     requiresRestart: false,
     warningLevel: "caution",

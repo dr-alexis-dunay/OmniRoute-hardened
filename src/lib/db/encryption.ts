@@ -224,6 +224,13 @@ export function encrypt(plaintext: string | null | undefined): string | null | u
 
   const key = getStaticKey();
   if (!key) {
+    // Hardening: operators handling sensitive data can refuse plaintext storage outright.
+    if (process.env.OMNIROUTE_REQUIRE_ENCRYPTION === "true") {
+      throw new Error(
+        "[Encryption] OMNIROUTE_REQUIRE_ENCRYPTION=true but STORAGE_ENCRYPTION_KEY is not set; " +
+          "refusing to store a credential in plaintext."
+      );
+    }
     console.warn(
       "[Encryption] STORAGE_ENCRYPTION_KEY not set. Storing plaintext (passthrough mode)."
     );
@@ -248,7 +255,9 @@ export function encrypt(plaintext: string | null | undefined): string | null | u
       `[Encryption] Encryption failed: ${message}. ` +
         `Check your STORAGE_ENCRYPTION_KEY — generate one with: openssl rand -base64 32`
     );
-    return plaintext; // fallback to plaintext rather than crashing
+    // Hardening: fail closed. Silently persisting a credential in cleartext after an
+    // encryption error defeats the point of at-rest encryption; surface the failure.
+    throw new Error(`[Encryption] Encryption failed: ${message}`);
   }
 }
 

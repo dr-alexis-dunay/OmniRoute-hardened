@@ -21,6 +21,7 @@ for (const name of [
 ]) {
   delete process.env[name];
 }
+process.env.REQUIRE_API_KEY = "false"; // hardened default is true; these characterization cases cover the keyless opt-out
 process.env.OMNIROUTE_BASE_URL = "http://a2a-char.test";
 
 const core = await import("../../src/lib/db/core.ts");
