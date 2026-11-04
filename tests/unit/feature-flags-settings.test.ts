@@ -559,6 +559,7 @@ describe("resolveFeatureFlag", () => {
     });
 
     it("returns false for 'false'", () => {
+      setFeatureFlagOverride("REQUIRE_API_KEY", "false");
       assert.ok(!isFeatureFlagEnabled("REQUIRE_API_KEY"));
     });
 
@@ -567,9 +568,9 @@ describe("resolveFeatureFlag", () => {
       assert.ok(!isFeatureFlagEnabled("REQUIRE_API_KEY"));
     });
 
-    it("returns false for empty string via ENV (falls to default)", () => {
+    it("returns the default for an empty string via ENV (REQUIRE_API_KEY defaults to true)", () => {
       process.env["REQUIRE_API_KEY"] = "";
-      assert.ok(!isFeatureFlagEnabled("REQUIRE_API_KEY"));
+      assert.ok(isFeatureFlagEnabled("REQUIRE_API_KEY"));
       delete process.env["REQUIRE_API_KEY"];
     });
   });

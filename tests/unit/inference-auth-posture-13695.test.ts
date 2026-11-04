@@ -59,8 +59,14 @@ function captureWarn(fn: () => void): string[] {
   return messages;
 }
 
-test("inference server warns on its default bind with REQUIRE_API_KEY unset", () => {
+test("inference server is silent on its hardened default (loopback bind, API key required)", () => {
   withEnv({ ...CLEAR_HOST, REQUIRE_API_KEY: undefined }, () => {
+    assert.deepEqual(captureWarn(warnIfInferenceServerExposed), []);
+  });
+});
+
+test("inference server warns when bound to 0.0.0.0 with REQUIRE_API_KEY=false", () => {
+  withEnv({ ...CLEAR_HOST, REQUIRE_API_KEY: "false", OMNIROUTE_BOUND_HOST: "0.0.0.0" }, () => {
     const messages = captureWarn(warnIfInferenceServerExposed);
     assert.equal(messages.length, 1);
     assert.match(messages[0], /\/v1 inference/);
