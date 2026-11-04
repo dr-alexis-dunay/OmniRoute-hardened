@@ -33,7 +33,7 @@ services:
       - RATE_LIMIT_MAX_WAIT_MS=${RATE_LIMIT_MAX_WAIT_MS:-300000}
       - OMNIROUTE_DIRECT_DISPATCHER_CONNECTIONS=${OMNIROUTE_DIRECT_DISPATCHER_CONNECTIONS:-32}
     ports:
-      - "${APP_BIND_HOST:-0.0.0.0}:20128:20128"
+      - "${APP_BIND_HOST:-127.0.0.1}:20128:20128"
     volumes:
       - omniroute-data:/app/data
     extra_hosts:
